@@ -25,9 +25,15 @@
       <button>設定</button>
     </fieldset>
   </form>
-  <button id="allOnButton" disabled>全てON</button>
-  <button id="allOffButton" disabled>全てOFF</button>
+  <div class="fieldsEnabledWhenHueReady">
+    <button id="allOnButton" disabled>全てON</button>
+    <button id="allOffButton" disabled>全てOFF</button>
+    <button id="" disabled>全てOFF</button>
+  </div>
+  <img src="kaeru.jpg" id="testImg">
+  
   <script src="jquery-2.1.0.min.js"></script>
+  <script src="util.js"></script>
   <script src="hue.js"></script>
   <script src="popup.js"></script>
 </body>

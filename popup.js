@@ -28,17 +28,20 @@ $(function() {
                     return alert('ライト情報の取得に失敗しました。');
                 }
                 hueLights = lights;
-                $('#allOnButton, #allOffButton').removeAttr('disabled');
+                enableFields();
                 $('main').show();
             });
         });
+    }
+    function enableFields(enable) {
+        $('#fieldsEnabledWhenHueReady').find('input,button,select,textarea').disabled('disabled', !!enable);
     }
     $('#deviceSettingsForm').submit(function(e) {
         HUE_DEVICE_TYPE = $(this.deviceType).val();
         HUE_USER_NAME = $(this.userName).val();
         var create = this.createUser.checked;
 
-        $('#allOnButton, #allOffButton').attr('disabled', 'disabled');
+        enableFields(false);
         
         hue.setUser(HUE_DEVICE_TYPE, HUE_USER_NAME, create, function(error, result) {
             if (error) {
@@ -51,7 +54,7 @@ $(function() {
                     return alert('ライト情報の取得に失敗しました。');
                 }
                 hueLights = lights;
-                $('#allOnButton, #allOffButton').removeAttr('disabled');
+                enableFields();
             });
         });
         e.preventDefault();
@@ -85,5 +88,33 @@ $(function() {
                 }
             });
         });
+    });
+
+    $('#testImg').on('load', function() {
+        var lightIds = Object.keys(hueLights);
+        var canvas = document.createElement('canvas');
+        var ctx = canvas.getContext('2d');
+        ctx.drawImage(this, 0, 0, this.width, this.height);
+        var colors = util.findUsedColors(ctx.getImageData(0, 0, canvas.width, canvas.height), lightIds.length);
+
+        for (var i = 0; i < lightIds.length; i++) {
+            var color = colors[i];
+            var hsb = util.rgbToHsv(color.r, color.g, color.b);
+            hue.api('/lights/' + lightIds[i] + '/state', {
+                type: 'PUT',
+                data: {
+                    on: true,
+                    hue: hsb.h,
+                    sat: hsb.s,
+                    bri: hsb.b
+                }
+            }, function(error, result) {
+                if (error) {
+                    console.error(error);
+                    return alert('ライトの色を変更する際にエラーが発生しました。');
+                }
+            });
+        }
+        console.log(colors);
     });
 });
