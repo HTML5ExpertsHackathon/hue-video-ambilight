@@ -144,7 +144,7 @@ $(function() {
                 next(null, baseIP);
             },
             function connect (baseIP, next) {
-                $.postJSON("http://" + baseIP + "/api")
+                $.postJSON("http://" + baseIP + "/api", {"devicetype": HUE_DEVICE_TYPE, "username": "newdeveloper"} )
                     .done(function (results) {
                         var result = results && results.shift && results.shift();
                         if(result.error) {

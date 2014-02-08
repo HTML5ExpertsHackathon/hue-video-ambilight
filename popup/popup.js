@@ -99,7 +99,7 @@ $(function() {
             return;
         }
         var lightIds = Object.keys(hueLights);
-        var source = document.getElementById('testVideo');
+        var source = document.getElementById('testImg');
         
         var canvas = document.createElement('canvas');
         canvas.width = source.width;

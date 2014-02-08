@@ -49,7 +49,7 @@ function findNearColor(color, colors) {
     return -1;
 }
 function isNearColor(color1, color2) {
-    var THRESHOLD = 70;
+    var THRESHOLD = 10;
     var rDiff = color1.r - color2.r;
     var gDiff = color1.g - color2.g;
     var bDiff = color1.b - color2.b;
