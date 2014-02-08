@@ -34,7 +34,7 @@ $(function() {
         });
     }
     function enableFields(enable) {
-        $('#fieldsEnabledWhenHueReady').find('input,button,select,textarea').disabled('disabled', !!enable);
+        $('.fieldsEnabledWhenHueReady').find('input,button,select,textarea').attr('disabled', !!enable);
     }
     $('#deviceSettingsForm').submit(function(e) {
         HUE_DEVICE_TYPE = $(this.deviceType).val();
