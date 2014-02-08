@@ -90,7 +90,7 @@ var util = this.util || {};
         }
         // value の計算
         v = max;
-        return {'h': h, 's': s, 'v': v};
+        return {'h': Math.floor(h), 's': Math.floor(s), 'v': Math.floor(v)};
     }
 
 })();

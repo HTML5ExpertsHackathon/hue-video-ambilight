@@ -75,7 +75,7 @@ $(function() {
             });
         });
     });
-    $('#allOnButton').click(function() {
+    $('#allOffButton').click(function() {
         Object.keys(hueLights).forEach(function(id) {
             hue.api('/lights/' + id + '/state', {
                 type: 'PUT',
@@ -90,31 +90,50 @@ $(function() {
         });
     });
 
-    $('#testImg').on('load', function() {
-        var lightIds = Object.keys(hueLights);
-        var canvas = document.createElement('canvas');
-        var ctx = canvas.getContext('2d');
-        ctx.drawImage(this, 0, 0, this.width, this.height);
-        var colors = util.findUsedColors(ctx.getImageData(0, 0, canvas.width, canvas.height), lightIds.length);
-
-        for (var i = 0; i < lightIds.length; i++) {
-            var color = colors[i];
-            var hsb = util.rgbToHsv(color.r, color.g, color.b);
-            hue.api('/lights/' + lightIds[i] + '/state', {
-                type: 'PUT',
-                data: {
-                    on: true,
-                    hue: hsb.h,
-                    sat: hsb.s,
-                    bri: hsb.b
-                }
-            }, function(error, result) {
-                if (error) {
-                    console.error(error);
-                    return alert('ライトの色を変更する際にエラーが発生しました。');
-                }
-            });
+    var timer;
+    $('#colorredLightButton').click(function() {
+        if (timer) {
+            clearTimeout(timer);
+            timer = null;
+            $('#allOffButton').click();
+            return;
         }
-        console.log(colors);
+        var lightIds = Object.keys(hueLights);
+        var source = document.getElementById('testVideo');
+        
+        var canvas = document.createElement('canvas');
+        canvas.width = source.width;
+        canvas.height = source.height;
+        var ctx = canvas.getContext('2d');
+
+        function changeLight() {
+            if (source.paused || source.ended) {
+                return;
+            }
+            ctx.drawImage(source, 0, 0, source.width, source.height);
+            var colors = util.findUsedColors(ctx.getImageData(0, 0, canvas.width, canvas.height), lightIds.length);
+            console.log(colors);
+            for (var i = 0; i < lightIds.length; i++) {
+                var color = colors[i];
+                var hsb = util.rgbToHsv(color.r, color.g, color.b);
+                console.log(hsb);
+                hue.api('/lights/' + lightIds[i] + '/state', {
+                    type: 'PUT',
+                    data: {
+                        on: true,
+                        hue: hsb.h,
+                        sat: hsb.s,
+                        bri: hsb.b
+                    }
+                }, function(error, result) {
+                    if (error) {
+                        console.error(error);
+                        return alert('ライトの色を変更する際にエラーが発生しました。');
+                    }
+                });
+            }
+            timer = setTimeout(changeLight, 5000);
+        }
+        changeLight();
     });
 });
