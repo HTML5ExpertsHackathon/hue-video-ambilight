@@ -29,7 +29,7 @@ $(function() {
     };
 
     jQuery.each( [ "put", "post" ], function( i, method ) {
-        jQuery[ method ] = function( url, data, callback, type ) {
+        jQuery[ method + "JSON" ] = function( url, data, callback, type ) {
             // shift arguments if data argument was omitted
             if ( jQuery.isFunction( data ) ) {
                 type = type || callback;
@@ -46,7 +46,7 @@ $(function() {
                 url: url,
                 type: method,
                 dataType: type || "json",
-                data: data,
+                data: JSON.stringify(data),
                 success: callback
             });
         };
@@ -96,9 +96,7 @@ $(function() {
             next(null, baseURL, lightIds);
         },
         playVideo
-    ], function () {
-
-    });
+    ]);
 
     function initializeHue (asyncComplete) {
         // connection to hue
@@ -107,40 +105,28 @@ $(function() {
                 if (!localStorage['hueURL']) {
                     return next();
                 }
-                $.getJSON(localStorage['hueURL'])
-                    .done(function (results) {
-                        if (!results.lights) {
-                            return next();
-                        }
-                        asyncComplete(
-                            null,
-                            localStorage['hueURL'],
-                            Object.keys(results.lights)
-                        );
-                    }).fail(function () {
-                        next();
-                    })
-                ;
+
+				$.ajax({
+	                url: localStorage['hueURL'],
+	                type: "get",
+	                dataType: "json",
+	                timeout: 3000
+	            }).done(function (results) {
+                    if (!results.lights) {
+                        return next();
+                    }
+                    asyncComplete(
+                        null,
+                        localStorage['hueURL'],
+                        Object.keys(results.lights)
+                    );
+                }).fail(function () {
+                    next();
+                });
             }, function (next) {
-                if (!localStorage['hueIp']) {
-                    return next();
-                }
-                $.postJSON("http://" + localStorage['hueIp'] + "/api")
-                    .done(function (results) {
-                        next(null, localStorage['hueIp']);
-                    }).fail(function () {
-                        next();
-                    })
-                ;
-            }, function (baseIP, next) {
                 messageContent.text('Connecting to meethue...');
-                next(null, baseIP);
-            }, function (baseIP, next) {
-                if (next) {
-                    return next(null, baseIP)
-                } else {
-                    next = baseIP;
-                }
+                next();
+            }, function (next) {
                 $.getJSON('http://www.meethue.com/api/nupnp')
                     .done(function(result) {
                         // [{"id":"<ID of bridge>","internalipaddress":"<IP of bridge>","macaddress":"<Mac address of bridge>"}]
@@ -154,7 +140,6 @@ $(function() {
                 ;
             },
             function (baseIP, next) {
-                localStorage['hueIp'] = baseIP;
                 messageContent.text('Connecting to bridge...');
                 next(null, baseIP);
             },
@@ -209,16 +194,16 @@ $(function() {
         async.waterfall([
             function (next) {
                 $('video').on('play', function () {
-                    next(null, lightIds, this);
+                    next(null, this);
                 });
-            }, function (lightIds, source, next) {
+            }, function (source, next) {
                 var canvas = document.createElement('canvas');
                 canvas.width = source.videoWidth;
                 canvas.height = source.videoHeight;
                 var ctx = canvas.getContext('2d');
 
-                next(null, lightIds, source, ctx);
-            }, function changeLight (lightIds, source, ctx, next) {
+                next(null, source, ctx);
+            }, function changeLight (source, ctx, next) {
                 if (source.paused || source.ended) {
                     // stop capture
                     return next();
@@ -252,8 +237,14 @@ $(function() {
                         ;
                     }
                     // recursive call
-                    setTimeout(changeLight.bind(this, lightIds, source, ctx, next), 5000);
+                    setTimeout(changeLight.bind(this, source, ctx, next), 5000);
                 });
+            }, function () {
+                for (var i = 0; i < lightIds.length; i++) {
+                    $.putJSON(baseURL + '/lights/' + lightIds[i] + '/state', {
+                        on: false
+                    });
+                }
             }
         ], makeAsyncError(asyncComplete));
     }
