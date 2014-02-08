@@ -1,7 +1,9 @@
-var util = this.util || {};
+var util = this.util || {
+    'color-analyzer.js' : 'color-analyzer.js'
+};
 
 (function() {
-    var worker = new Worker('color-analyzer.js');
+    var worker = new Worker(util['color-analyzer.js']);
     
     util.findUsedColors = function(imageData, topN, callback) {
         var TOP = topN || 3;

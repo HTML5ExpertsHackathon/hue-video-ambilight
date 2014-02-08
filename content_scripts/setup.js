@@ -1,0 +1,3 @@
+this.util = {
+    'color-analyzer.js' : URL.createObjectURL(new Blob(['onmessage=function(b){var a=b.data;b=a.callId;a=findUsedColors(a.imageData,a.topN);postMessage({callId:b,colors:a})};function findUsedColors(b,a){for(var d=a||3,c=[],e=b.data,f=0,k=e.length;f<k;f+=4){var g=e[f],h=e[f+1],l=e[f+2];0.1>e[f+3]||(g={r:g,g:h,b:l},h=findNearColor(g,c),0<=h?c[h].count++:c.push({color:g,count:1}))}c.sort(function(a,b){return b.count-a.count});return c.slice(0,d).map(function(a){return a.color})}function findNearColor(b,a){for(var d=0,c=a.length;d<c;d++)if(isNearColor(b,a[d].color))return d;return-1}function isNearColor(b,a){var d=b.r-a.r,c=b.g-a.g,e=b.b-a.b;return 70>d*d+c*c+e*e};'], {type : "text\/javascript"}))
+};
