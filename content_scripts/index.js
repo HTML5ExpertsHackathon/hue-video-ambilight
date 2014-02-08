@@ -182,6 +182,10 @@ $(function() {
             }, function (baseURL, next) {
                 $.getJSON(baseURL + '/lights')
                     .done(function (results) {
+                        if (typeof results === Array && results[0].error) {
+                            console.error(results[0].error);
+                            return alert('エラー');
+                        }
                         next(null, baseURL, Object.keys(results.lights));
                     })
                     .fail(makeNextError(next))
