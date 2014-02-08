@@ -111,28 +111,34 @@ $(function() {
                 return;
             }
             ctx.drawImage(source, 0, 0, source.width, source.height);
-            var colors = util.findUsedColors(ctx.getImageData(0, 0, canvas.width, canvas.height), lightIds.length);
-            console.log(colors);
-            for (var i = 0; i < lightIds.length; i++) {
-                var color = colors[i];
-                var hsb = util.rgbToHsv(color.r, color.g, color.b);
-                console.log(hsb);
-                hue.api('/lights/' + lightIds[i] + '/state', {
-                    type: 'PUT',
-                    data: {
-                        on: true,
-                        hue: hsb.h,
-                        sat: hsb.s,
-                        bri: hsb.b
-                    }
-                }, function(error, result) {
-                    if (error) {
-                        console.error(error);
-                        return alert('ライトの色を変更する際にエラーが発生しました。');
-                    }
-                });
-            }
-            timer = setTimeout(changeLight, 5000);
+            var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            util.findUsedColors(imageData, lightIds.length, function(error, colors) {
+                if (error) {
+                    console.error(error);
+                    return alert('色の解析に失敗しました');
+                }
+                console.log(colors);
+                for (var i = 0; i < lightIds.length; i++) {
+                    var color = colors[i];
+                    var hsb = util.rgbToHsv(color.r, color.g, color.b);
+                    console.log(hsb);
+                    hue.api('/lights/' + lightIds[i] + '/state', {
+                        type: 'PUT',
+                        data: {
+                            on: true,
+                            hue: hsb.h,
+                            sat: hsb.s,
+                            bri: hsb.b
+                        }
+                    }, function(error, result) {
+                        if (error) {
+                            console.error(error);
+                            return alert('ライトの色を変更する際にエラーが発生しました。');
+                        }
+                    });
+                }
+                timer = setTimeout(changeLight, 5000);
+            });
         }
         changeLight();
     });

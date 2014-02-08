@@ -1,35 +1,22 @@
 var util = this.util || {};
 
 (function() {
-    util.findUsedColors = function(imageData, topN) {
-        var TOP = topN || 3, OPACITY_THRESHOLD = .1;
-        var usedColors = []; // [{color: {rgb}, count: n}]
-        var imageDataArray = imageData.data;
-        for (var i = 0, n = imageDataArray.length; i < n; i+=4) {
-            var r = imageDataArray[i];
-            var g = imageDataArray[i+1];
-            var b = imageDataArray[i+2];
-            var a = imageDataArray[i+3];
-            
-            if (a < OPACITY_THRESHOLD) {
-                continue;
+    var worker = new Worker('color-analyzer.js');
+    
+    util.findUsedColors = function(imageData, topN, callback) {
+        var TOP = topN || 3;
+        var callId = Date.now();
+        worker.onmessage = function(event) {
+            var result = event.data;
+            if (result.callId !== callId) {
+                return;
             }
-            var color = { r: r, g: g, b: b };
-            var nearColor = findNearColor(color, usedColors);
-            if (nearColor >= 0) {
-                usedColors[nearColor].count++;
-            } else {
-                usedColors.push({
-                    color: color,
-                    count: 1
-                });
-            }
-        }
-        usedColors.sort(function(a, b) {
-            return b.count - a.count;
-        });
-        return usedColors.slice(0, TOP).map(function(obj) {
-            return obj.color;
+            callback(null, result.colors);
+        };
+        worker.postMessage({
+            callId: callId,
+            imageData: imageData,
+            topN: topN
         });
     }
     util.rgbToString = function(color) {
@@ -42,22 +29,6 @@ var util = this.util || {};
             hex = '0' + hex;
         }
         return hex;
-    }
-    function findNearColor(color, colors) {
-        for (var i = 0, n = colors.length; i < n; i++) {
-            var color2 = colors[i].color;
-            if (isNearColor(color, color2)) {
-                return i;
-            }
-        }
-        return -1;
-    }
-    function isNearColor(color1, color2) {
-        var THRESHOLD = 70;
-        var rDiff = color1.r - color2.r;
-        var gDiff = color1.g - color2.g;
-        var bDiff = color1.b - color2.b;
-        return (rDiff * rDiff + gDiff * gDiff + bDiff * bDiff) < THRESHOLD;
     }
 
     util.rgbToHsv = function(r, g, b, coneModel) {
