@@ -15,6 +15,7 @@
       "js" : [
         "lib/async.js",
         "lib/jquery-2.1.0.min.js",
+        "popup/util.js",
         "content_scripts/index.js"
       ]
     }

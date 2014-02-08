@@ -23,7 +23,7 @@ $(function() {
     var makeAsyncError = function (next) {
         return function (error, result) {
             if (!error) {
-                return next(result);
+                return next(null, result);
             }
             console.log(error);
             messageContent.text(error.error);
@@ -64,12 +64,15 @@ $(function() {
                     next();
                 });
             ;
-        },
-        function (next) {
-            messageContent.text('Connecting to meethue...');
+        }, function (next) {
+            messageContent.text('Initialize hue...');
             next();
         },
         initializeHue,
+        function (baseURL, lightIds, next) {
+            messageContent.text('Ready to play');
+            next(null, baseURL, lightIds);
+        },
         playVideo
     ], function () {
 
@@ -78,7 +81,51 @@ $(function() {
     function initializeHue (asyncComplete) {
         // connection to hue
         async.waterfall([
-            function (next) {
+        	function (next) {
+            	if (!localStorage['hueURL']) {
+            		return next();
+            	}
+                $.ajax(
+                    localStorage['hueURL'],
+                    {
+                        type: 'GET',
+                        dataType: 'JSON'
+                    }
+                ).done(function (results) {
+                	if (!results.lights) {
+                		return next();
+                	}
+                    asyncComplete(null, localStorage['hueURL'], Object.keys(results.lights));
+                }).fail(function () {
+                	next();
+                });
+        	}, function (next) {
+            	if (!localStorage['hueIp']) {
+            		return next();
+            	}
+                $.ajax(
+                    "http://" + localStorage['hueIp'] + "/api",
+                    {
+                        type: 'POST',
+                        dataType: 'JSON',
+                        data : JSON.stringify({
+                            "devicetype": HUE_DEVICE_TYPE
+                        })
+                    }
+                ).done(function (results) {
+                    next(null, localStorage['hueIp']);
+                }).fail(function () {
+                	next();
+                });
+	        }, function (baseIP, next) {
+	            messageContent.text('Connecting to meethue...');
+	            next(null, baseIP);
+        	}, function (baseIP, next) {
+        		if (next) {
+        			return next(null, baseIP)
+        		} else {
+        			next = baseIP;
+        		}
                 $.getJSON('http://www.meethue.com/api/nupnp')
                     .done(function(result) {
                         // [{"id":"<ID of bridge>","internalipaddress":"<IP of bridge>","macaddress":"<Mac address of bridge>"}]
@@ -88,11 +135,11 @@ $(function() {
                         } else {
                             next({ error: "unable to reach hue bridge." });
                         }
-                    })
-                    .fail(makeNextError(next));
+                    }).fail(makeNextError(next));
                 ;
             },
             function (baseIP, next) {
+            	localStorage['hueIp'] = baseIP;
                 messageContent.text('Connecting to bridge...');
                 next(null, baseIP);
             },
@@ -118,8 +165,7 @@ $(function() {
                         'baseIP' : baseIP,
                         'username' : result.success.username
                     });
-                })
-                .fail(makeNextError(next));
+                }).fail(makeNextError(next));
 
                 function errorHandling (error) {
                     if(error.description !== "link button not pressed") {
@@ -136,7 +182,9 @@ $(function() {
             },
             function (result, next) {
                 messageContent.text('Connected');
-                next(null, "http://" + result.baseIP + "/api/" + result.username);
+            	var url = "http://" + result.baseIP + "/api/" + result.username;
+            	localStorage['hueURL'] = url;
+                next(null, url);
             }, function (baseURL, next) {
                 $.ajax(
                     baseURL + '/lights',
@@ -145,10 +193,8 @@ $(function() {
                         dataType: 'JSON'
                     }
                 ).done(function (results) {
-                    var lightIds = Object.keys(results);
-                    next(null, baseURL, lightIds);
-                })
-                .fail(makeNextError(next));
+                    next(null, baseURL, Object.keys(results.lights));
+                }).fail(makeNextError(next));
             }
         ], makeAsyncError(asyncComplete));
     }
@@ -156,24 +202,25 @@ $(function() {
     function playVideo (baseURL, lightIds, asyncComplete) {
         async.waterfall([
             function (next) {
-                $('video').on('play').done(function () {
-                    next(null, this);
+                $('video').on('play', function () {
+                    next(null, lightIds, this);
                 });
-            }, function (source, next) {
+            }, function (lightIds, source, next) {
                 var canvas = document.createElement('canvas');
                 canvas.width = source.width;
                 canvas.height = source.height;
+
+                next(null, lightIds, source, canvas);
+            }, function changeLight (lightIds, source, canvas, next) {
                 var ctx = canvas.getContext('2d');
 
-                next(null, source, ctx);
-            }, function changeLight (source, ctx, next) {
                 if (source.paused || source.ended) {
                     // stop capture
                     return next();
                 }
 
                 ctx.drawImage(source, 0, 0, source.width, source.height);
-                var imageData = ctx.getImageData(0, 0, source.width, source.height);
+                var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
                 util.findUsedColors(imageData, lightIds.length, function(error, colors) {
                     if (error) {
                         console.error(error);
@@ -199,11 +246,9 @@ $(function() {
                             }
                         });
                     }
-                    timer = setTimeout(changeLight, 5000);
+                    // recursive call
+                    setTimeout(changeLight.bind(this, lightIds, source, canvas, next), 5000);
                 });
-
-                // recursive call
-                setTimeout(changeLight.bind(this, lightIds, source, ctx, next), 5000);
             }
         ], makeAsyncError(asyncComplete));
     }
