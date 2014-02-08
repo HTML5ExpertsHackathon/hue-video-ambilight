@@ -8,26 +8,19 @@
     "48": "img/icon.png"
   },
   "default_locale": "en",
-  "background" : {
-    "persistent": false,
-    "scripts": [
-      "background/index.js"
-    ]
-  },
   "content_scripts": [
     {
       "matches": ["*://*/*"],
       "all_frames": true,
       "js" : [
-        "contentscripts/index.js"
+        "lib/async.js",
+        "lib/jquery-2.1.0.min.js",
+        "content_scripts/index.js"
       ]
     }
   ],
   "browser_action": {
     "default_icon": "popup/icon.png",
     "default_popup": "popup/popup.html"
-  },
-  "permissions": [
-    "<all_urls>"
-  ]
+  }
 }
