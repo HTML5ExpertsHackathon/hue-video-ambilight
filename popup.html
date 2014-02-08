@@ -1,32 +1,35 @@
 <!doctype html>
 <html>
   <head>
-    <title>Getting Started Extension's Popup</title>
-    <style>
-      body {
-        min-width: 357px;
-        overflow-x: hidden;
-      }
-
-      img {
-        margin: 5px;
-        border: 2px solid black;
-        vertical-align: middle;
-        width: 75px;
-        height: 75px;
-      }
-    </style>
-
-    <!--
-      - JavaScript and HTML must be in separate files: see our Content Security
-      - Policy documentation[1] for details and explanation.
-      -
-      - [1]: http://developer.chrome.com/extensions/contentSecurityPolicy.html
-     -->
-    <script src="jquery-2.1.0.min.js"></script>
-    <script src="popup.js"></script>
+    <meta charset="UTF-8">
+    <title>Hue Controller</title>
   </head>
-  <body>
-  </body>
+</head>
+<body>
+  <h1>Hueコントローラ</h1>
+  <form id="deviceSettingsForm">
+    <fieldset>
+      <legend>デバイスタイプとユーザ名の設定</legend>
+      <div class="field">
+        <label for="deviceType">デバイスタイプ:</label>
+        <input id="deviceType" name="deviceType">
+      </div>
+      <div class="field">
+        <label for="userName">ユーザ名:</label>
+        <input id="userName" name="userName">
+      </div>
+      <div class="field">
+        <input type="checkbox" id="createUser">
+        <label for="createUser">ユーザを新規作成する</label>
+      </div>
+      <button>設定</button>
+    </fieldset>
+  </form>
+  <button id="allOnButton" disabled>全てON</button>
+  <button id="allOffButton" disabled>全てOFF</button>
+  <script src="jquery-2.1.0.min.js"></script>
+  <script src="hue.js"></script>
+  <script src="popup.js"></script>
+</body>
 </html>
 
