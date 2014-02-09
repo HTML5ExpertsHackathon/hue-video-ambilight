@@ -55,6 +55,9 @@ $(function() {
     async.waterfall([
         function (next) {
             var iframe = $('<iframe></iframe>')
+                .css({
+                    'border' : 'none'
+                })
                 .attr({
                     'srcdoc' : '<body style="margin: 0;padding: 0;overflow: hidden;text-align: center;"><button>Connect to hue</button></body>',
                     'sandbox' : 'allow-same-origin allow-scripts'
@@ -192,23 +195,26 @@ $(function() {
                 });
             }, function (source, next) {
                 var canvas = document.createElement('canvas');
-                canvas.width = source.videoWidth;
-                canvas.height = source.videoHeight;
+                canvas.width = $(source).width();
+                canvas.height = $(source).height();
                 var ctx = canvas.getContext('2d');
 
-                next(null, source, ctx);
-            }, function changeLight (source, ctx, next) {
+                next(null, source, ctx, canvas.width, canvas.height);
+            }, function changeLight (source, ctx, width, height, next) {
                 if (source.paused || source.ended) {
                     // stop capture
                     return next();
                 }
 
-                ctx.drawImage(source, 0, 0, source.videoWidth, source.videoHeight);
-                var imageData = ctx.getImageData(0, 0, source.videoWidth, source.videoHeight);
+                ctx.drawImage(source, 0, 0, width, height);
+                var imageData = ctx.getImageData(0, 0, width, height);
                 util.findUsedColors(imageData, lightIds.length, function(error, colors) {
                     if (error) {
                         console.error(error);
                         return alert('色の解析に失敗しました');
+                    }
+                    if (!colors.length) {
+                        return recursiveCall();
                     }
                     console.log(colors);
                     for (var i = 0; i < lightIds.length; i++) {
@@ -228,10 +234,12 @@ $(function() {
                             .fail(function () {
                                 console.log(arguments);
                             })
+                            .always(recursiveCall)
                         ;
                     }
-                    // recursive call
-                    setTimeout(changeLight.bind(this, source, ctx, next), 5000);
+                    function recursiveCall () {
+                        setTimeout(changeLight.bind(this, source, ctx, width, height, next), 1000);
+                    }
                 });
             }, function () {
                 for (var i = 0; i < lightIds.length; i++) {
