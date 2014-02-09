@@ -19,7 +19,7 @@ var util = this.util || {
             callId: callId,
             imageData: imageData,
             topN: topN
-        });
+        }, [imageData.data.buffer]);
     }
     util.rgbToString = function(color) {
         return '#' + byteToHex(color.r) + byteToHex(color.g) + byteToHex(color.b); 

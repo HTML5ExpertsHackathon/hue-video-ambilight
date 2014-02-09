@@ -112,7 +112,7 @@ $(function() {
             }
             ctx.drawImage(source, 0, 0, source.width, source.height);
             var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            util.findUsedColorsNoWorker(imageData, lightIds.length, function(error, colors) {
+            util.findUsedColors(imageData, lightIds.length, function(error, colors) {
                 if (error) {
                     console.error(error);
                     return alert('色の解析に失敗しました');
