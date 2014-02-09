@@ -190,9 +190,17 @@ $(function() {
     function playVideo (baseURL, lightIds, asyncComplete) {
         async.waterfall([
             function (next) {
-                $('video').on('play', function () {
+                var videos = $('video').on('play', function () {
                     next(null, this);
+                }).get();
+                videos.filter(function (video) {
+                       return !video.paused && !video.ended;
+                }).forEach(function (video) {
+                       next(null, video);
                 });
+            }, function (source, next) {
+                messageContent.text('Play hue');
+                   next(null, source);
             }, function (source, next) {
                 var canvas = document.createElement('canvas');
                 canvas.width = $(source).width();
@@ -210,8 +218,7 @@ $(function() {
                 var imageData = ctx.getImageData(0, 0, width, height);
                 util.findUsedColors(imageData, lightIds.length, function(error, colors) {
                     if (error) {
-                        console.error(error);
-                        return alert('色の解析に失敗しました');
+                        return console.error(error);
                     }
                     if (!colors.length) {
                         return recursiveCall();
@@ -241,12 +248,22 @@ $(function() {
                         setTimeout(changeLight.bind(this, source, ctx, width, height, next), 1000);
                     }
                 });
-            }, function () {
-                for (var i = 0; i < lightIds.length; i++) {
-                    $.putJSON(baseURL + '/lights/' + lightIds[i] + '/state', {
+            }, function (next) {
+                messageContent.text('Lights off...');
+                next();
+            }, function (next) {
+                var deferreds = $(lightIds).map(function (id, lightId) {
+                    return $.putJSON(baseURL + '/lights/' + lightId + '/state', {
                         on: false
                     });
-                }
+                }).get();
+                $.when.call($, deferreds).done(function () {
+                    console.log(arguments)
+                    next();
+                });
+            }, function (next) {
+                messageContent.text('Ready to play');
+                next();
             }
         ], makeAsyncError(asyncComplete));
     }
