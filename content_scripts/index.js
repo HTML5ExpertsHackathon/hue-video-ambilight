@@ -101,13 +101,17 @@ $(function() {
     function initializeHue (asyncComplete) {
         // connection to hue
         async.waterfall([
-            function (next) {
-                if (!localStorage['hueURL']) {
+        	function (next) {
+				chrome.storage.local.get('hueURL', function (item) {
+					next(null, item['hueURL']);
+				});
+        	}, function (hueURL, next) {
+                if (!hueURL) {
                     return next();
                 }
 
 				$.ajax({
-	                url: localStorage['hueURL'],
+	                url: hueURL,
 	                type: "get",
 	                dataType: "json",
 	                timeout: 3000
@@ -117,7 +121,7 @@ $(function() {
                     }
                     asyncComplete(
                         null,
-                        localStorage['hueURL'],
+                        hueURL,
                         Object.keys(results.lights)
                     );
                 }).fail(function () {
@@ -173,12 +177,12 @@ $(function() {
                         connect(baseIP, next);
                     }, 1000);
                 }
-            },
-            function (result, next) {
+            }, function (result, next) {
                 messageContent.text('Connected');
                 var url = "http://" + result.baseIP + "/api/" + result.username;
-                localStorage['hueURL'] = url;
-                next(null, url);
+				chrome.storage.local.set({'hueURL' : url}, function () {
+					next(null, url);
+				});
             }, function (baseURL, next) {
                 $.getJSON(baseURL + '/lights')
                     .done(function (results) {
