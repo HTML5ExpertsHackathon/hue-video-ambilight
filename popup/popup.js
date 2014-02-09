@@ -126,15 +126,19 @@ $(function() {
                     var color = colors[i];
                     $($palette[i]).css('backgroundColor', util.rgbToString(color));
 
-                    var hsb = util.rgbToHsv(color.r, color.g, color.b);
-                    var hsbStr = 'hsl(' + hsb.h + ',' + hsb.s + '%,' + hsb.v + '%)';
-                    $($palette2[i]).css('backgroundColor', hsbStr);
-                    console.log('css:' + hsbStr);
+                    var hsl = util.rgbToHsl(color.r, color.g, color.b);
+                    var hslStr = 'hsl(' + hsl.h + ',' + hsl.s + '%,' + hsl.l + '%)';
+                    
+                    $($palette2[i]).css('backgroundColor', hslStr);
+                    console.log('css:' + hslStr);
+
+                    var hsv = util.rgbToHsv(color.r, color.g, color.b);
+                    
                     var hueParam = {
                         on: true,
-                        hue: Math.floor(65535 * hsb.h / 360),
-                        sat: Math.floor(255 * hsb.s / 100),
-                        bri: Math.floor(255 * hsb.v / 100)
+                        hue: Math.floor(65535 * hsv.h / 360),
+                        sat: Math.floor(255 * hsv.s / 100),
+                        bri: Math.floor(255 * hsv.v / 100)
                     };
                     console.log(hueParam);
                     hue.api('/lights/' + lightIds[i] + '/state', {
