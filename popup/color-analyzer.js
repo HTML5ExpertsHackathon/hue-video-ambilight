@@ -9,7 +9,7 @@ onmessage = function(event) {
 };
 
 function findUsedColors(imageData, topN) {
-    var NEAR_THRESHOLD = 30;
+    var NEAR_THRESHOLD = 70;
     var TOP = topN || 3, OPACITY_THRESHOLD = .1;
     var usedColors = []; // [{color: {rgb}, count: n}]
     var imageDataArray = imageData.data;
