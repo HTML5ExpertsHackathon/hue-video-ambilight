@@ -54,38 +54,27 @@ $(function() {
 
     async.waterfall([
         function (next) {
-            $('<button>Connect to hue</button>')
-                .appendTo(messageContent)
+            var iframe = $('<iframe></iframe>')
                 .css({
-                    'margin' : '0',
-                    'font' : '-webkit-small-control',
-                    'letter-spacing' : 'normal',
-                    'word-spacing' : 'normal',
-                    'text-transform' : 'none',
-                    'text-indent' : '0px',
-                    'text-shadow' : 'none',
-                    'display' : 'inline-block',
-                    'align-items' : 'flex-start',
-                    'text-align' : 'center',
-                    'cursor' : 'default',
-                    'color' : 'buttontext',
-                    'padding' : '2px 6px 3px',
-                    'border' : '2px outset buttonface',
-                    'border-image-source' : 'initial',
-                    'border-image-slice' : 'initial',
-                    'border-image-width' : 'initial',
-                    'border-image-outset' : 'initial',
-                    'border-image-repeat' : 'initial',
-                    'background-color' : 'buttonface',
-                    'box-sizing' : 'border-box',
-                    '-webkit-writing-mode' : 'horizontal-tb',
-                    '-webkit-appearance' : 'button'
+                    'border' : 'none'
                 })
-                .on('click', function () {
-                    // drop arguments
-                    next();
-                });
+                .attr({
+                    'srcdoc' : '<body style="margin: 0;padding: 0;overflow: hidden;text-align: center;"><button>Connect to hue</button></body>',
+                    'sandbox' : 'allow-same-origin allow-scripts'
+                })
+                .appendTo(messageContent)
+                .on('load', function () {
+                    next(null, $(this));
+                })
             ;
+        }, function (iframe, next) {
+            var button = iframe.contents().find('button');
+            iframe.width(button.outerWidth() + 10);
+            iframe.height(button.outerHeight() + 5);
+            button.on('click', function () {
+                // drop arguments
+                next();
+            });
         }, function (next) {
             messageContent.text('Initialize hue...');
             next();
@@ -206,23 +195,26 @@ $(function() {
                 });
             }, function (source, next) {
                 var canvas = document.createElement('canvas');
-                canvas.width = source.videoWidth;
-                canvas.height = source.videoHeight;
+                canvas.width = $(source).width();
+                canvas.height = $(source).height();
                 var ctx = canvas.getContext('2d');
 
-                next(null, source, ctx);
-            }, function changeLight (source, ctx, next) {
+                next(null, source, ctx, canvas.width, canvas.height);
+            }, function changeLight (source, ctx, width, height, next) {
                 if (source.paused || source.ended) {
                     // stop capture
                     return next();
                 }
 
-                ctx.drawImage(source, 0, 0, source.videoWidth, source.videoHeight);
-                var imageData = ctx.getImageData(0, 0, source.videoWidth, source.videoHeight);
+                ctx.drawImage(source, 0, 0, width, height);
+                var imageData = ctx.getImageData(0, 0, width, height);
                 util.findUsedColors(imageData, lightIds.length, function(error, colors) {
                     if (error) {
                         console.error(error);
                         return alert('色の解析に失敗しました');
+                    }
+                    if (!colors.length) {
+                        return recursiveCall();
                     }
                     console.log(colors);
                     for (var i = 0; i < lightIds.length; i++) {
@@ -242,10 +234,12 @@ $(function() {
                             .fail(function () {
                                 console.log(arguments);
                             })
+                            .always(recursiveCall)
                         ;
                     }
-                    // recursive call
-                    setTimeout(changeLight.bind(this, source, ctx, next), 5000);
+                    function recursiveCall () {
+                        setTimeout(changeLight.bind(this, source, ctx, width, height, next), 1000);
+                    }
                 });
             }, function () {
                 for (var i = 0; i < lightIds.length; i++) {
