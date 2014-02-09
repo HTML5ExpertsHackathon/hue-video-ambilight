@@ -32,41 +32,33 @@ var util = this.util || {
         }
         return hex;
     }
-
-    util.rgbToHsv = function(r, g, b, coneModel) {
-        var h, // 0..360
-        s, v, // 0..255
-        max = Math.max(Math.max(r, g), b),
-        min = Math.min(Math.min(r, g), b);
-
-        // hue の計算
+    util.rgbToHsv = function(r, g, b) {
+        r /= 255, g /= 255, b /= 255;
+        
+        var max = Math.max(r, g, b), min = Math.min(r, g, b);
+        var h, s, l = (max + min) / 2;
+        
         if (max == min) {
-            h = 0; // 本来は定義されないが、仮に0を代入
-        } else if (max == r) {
-            h = 60 * (g - b) / (max - min) + 0;
-        } else if (max == g) {
-            h = (60 * (b - r) / (max - min)) + 120;
+            h = s = 0; // achromatic
         } else {
-            h = (60 * (r - g) / (max - min)) + 240;
+            var d = max - min;
+            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+            
+            switch (max) {
+            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+            case g: h = (b - r) / d + 2; break;
+            case b: h = (r - g) / d + 4; break;
+            }
+            
+            h /= 6;
         }
-        while (h < 0) {
-            h += 360;
-        }
-        // saturation の計算
-        if (coneModel) {
-            // 円錐モデルの場合
-            s = max - min;
-        } else {
-            s = (max == 0)
-                ? 0 // 本来は定義されないが、仮に0を代入
-                : (max - min) / max * 255;
-        }
-        // value の計算
-        v = max;
-        return {'h': Math.floor(h), 's': Math.floor(s), 'v': Math.floor(v)};
+        
+        return {
+            h: Math.round(h * 360),
+            s: Math.round(s * 100),
+            v: Math.round(l * 100)
+        };
     }
-
-
 
     // 以下はパフォーマンスチューニング用。あとで削る。
     util.findUsedColorsNoWorker = function(imageData, topN, callback) {
