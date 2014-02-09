@@ -54,38 +54,24 @@ $(function() {
 
     async.waterfall([
         function (next) {
-            $('<button>Connect to hue</button>')
-                .appendTo(messageContent)
-                .css({
-                    'margin' : '0',
-                    'font' : '-webkit-small-control',
-                    'letter-spacing' : 'normal',
-                    'word-spacing' : 'normal',
-                    'text-transform' : 'none',
-                    'text-indent' : '0px',
-                    'text-shadow' : 'none',
-                    'display' : 'inline-block',
-                    'align-items' : 'flex-start',
-                    'text-align' : 'center',
-                    'cursor' : 'default',
-                    'color' : 'buttontext',
-                    'padding' : '2px 6px 3px',
-                    'border' : '2px outset buttonface',
-                    'border-image-source' : 'initial',
-                    'border-image-slice' : 'initial',
-                    'border-image-width' : 'initial',
-                    'border-image-outset' : 'initial',
-                    'border-image-repeat' : 'initial',
-                    'background-color' : 'buttonface',
-                    'box-sizing' : 'border-box',
-                    '-webkit-writing-mode' : 'horizontal-tb',
-                    '-webkit-appearance' : 'button'
+            var iframe = $('<iframe></iframe>')
+                .attr({
+                    'srcdoc' : '<body style="margin: 0;padding: 0;overflow: hidden;text-align: center;"><button>Connect to hue</button></body>',
+                    'sandbox' : 'allow-same-origin allow-scripts'
                 })
-                .on('click', function () {
-                    // drop arguments
-                    next();
-                });
+                .appendTo(messageContent)
+                .on('load', function () {
+                    next(null, $(this));
+                })
             ;
+        }, function (iframe, next) {
+            var button = iframe.contents().find('button');
+            iframe.width(button.outerWidth() + 10);
+            iframe.height(button.outerHeight() + 5);
+            button.on('click', function () {
+                // drop arguments
+                next();
+            });
         }, function (next) {
             messageContent.text('Initialize hue...');
             next();
