@@ -99,37 +99,51 @@ $(function() {
             return;
         }
         var lightIds = Object.keys(hueLights);
-        var source = document.getElementById('testVideo');
+        var source = document.getElementById('testImg');
+        var w = source.width > 400 ? 400 : source.width;
+        var h = Math.floor(w * (source.height / source.width));
         
         var canvas = document.createElement('canvas');
-        canvas.width = source.width;
-        canvas.height = source.height;
+        canvas.width = w;
+        canvas.height = h;
         var ctx = canvas.getContext('2d');
 
         function changeLight() {
             if (source.paused || source.ended) {
                 return;
             }
-            ctx.drawImage(source, 0, 0, source.width, source.height);
-            var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(source, 0, 0, w, h, 0, 0, source.width, source.height);
+            var imageData = ctx.getImageData(0, 0, w, h);
             util.findUsedColors(imageData, lightIds.length, function(error, colors) {
                 if (error) {
                     console.error(error);
                     return alert('色の解析に失敗しました');
                 }
-                console.log(colors);
+                var $palette = $('#palette').children();
+                var $palette2 = $('#palette2').children();
+                
                 for (var i = 0; i < lightIds.length; i++) {
                     var color = colors[i];
-                    var hsb = util.rgbToHsv(color.r, color.g, color.b);
-                    console.log(hsb);
+                    $($palette[i]).css('backgroundColor', util.rgbToString(color));
+
+                    var hsl = util.rgbToHsl(color.r, color.g, color.b);
+                    var hslStr = 'hsl(' + hsl.h + ',' + hsl.s + '%,' + hsl.l + '%)';
+                    
+                    $($palette2[i]).css('backgroundColor', hslStr);
+                    console.log('css:' + hslStr);
+
+                    var hsv = util.rgbToHsv(color.r, color.g, color.b);
+                    
+                    var hueParam = {
+                        on: true,
+                        hue: Math.floor(65535 * hsv.h / 360),
+                        sat: Math.floor(255 * hsv.s / 100),
+                        bri: Math.floor(255 * hsv.v / 100)
+                    };
+                    console.log(hueParam);
                     hue.api('/lights/' + lightIds[i] + '/state', {
                         type: 'PUT',
-                        data: {
-                            on: true,
-                            hue: hsb.h,
-                            sat: hsb.s,
-                            bri: hsb.b
-                        }
+                        data: hueParam
                     }, function(error, result) {
                         if (error) {
                             console.error(error);

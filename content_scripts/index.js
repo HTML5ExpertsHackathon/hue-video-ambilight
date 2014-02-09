@@ -231,9 +231,9 @@ $(function() {
 
                         $.putJSON(baseURL + '/lights/' + lightIds[i] + '/state', {
                             on: true,
-                            hue: hsb.h,
-                            sat: hsb.s,
-                            bri: hsb.b
+                            hue: Math.floor(65535 * hsb.h / 360),
+                            sat: Math.floor(255 * hsb.s / 100),
+                            bri: Math.floor(255 * hsb.v / 100)
                         })
                             .done(function (results) {
                                 console.log(arguments);
