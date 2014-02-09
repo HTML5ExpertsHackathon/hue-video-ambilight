@@ -101,21 +101,21 @@ $(function() {
     function initializeHue (asyncComplete) {
         // connection to hue
         async.waterfall([
-        	function (next) {
-				chrome.storage.local.get('hueURL', function (item) {
-					next(null, item['hueURL']);
-				});
-        	}, function (hueURL, next) {
+            function (next) {
+                chrome.storage.local.get('hueURL', function (item) {
+                    next(null, item['hueURL']);
+                });
+            }, function (hueURL, next) {
                 if (!hueURL) {
                     return next();
                 }
 
-				$.ajax({
-	                url: hueURL,
-	                type: "get",
-	                dataType: "json",
-	                timeout: 3000
-	            }).done(function (results) {
+                $.ajax({
+                    url: hueURL,
+                    type: "get",
+                    dataType: "json",
+                    timeout: 3000
+                }).done(function (results) {
                     if (!results.lights) {
                         return next();
                     }
@@ -180,9 +180,9 @@ $(function() {
             }, function (result, next) {
                 messageContent.text('Connected');
                 var url = "http://" + result.baseIP + "/api/" + result.username;
-				chrome.storage.local.set({'hueURL' : url}, function () {
-					next(null, url);
-				});
+                chrome.storage.local.set({'hueURL' : url}, function () {
+                    next(null, url);
+                });
             }, function (baseURL, next) {
                 $.getJSON(baseURL + '/lights')
                     .done(function (results) {
