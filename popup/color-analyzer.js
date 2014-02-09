@@ -9,6 +9,7 @@ onmessage = function(event) {
 };
 
 function findUsedColors(imageData, topN) {
+    var NEAR_THRESHOLD = 30;
     var TOP = topN || 3, OPACITY_THRESHOLD = .1;
     var usedColors = []; // [{color: {rgb}, count: n}]
     var imageDataArray = imageData.data;
@@ -21,13 +22,23 @@ function findUsedColors(imageData, topN) {
         if (a < OPACITY_THRESHOLD) {
             continue;
         }
-        var color = { r: r, g: g, b: b };
-        var nearColor = findNearColor(color, usedColors);
-        if (nearColor >= 0) {
-            usedColors[nearColor].count++;
-        } else {
+        var nearColorIndex = -1;
+        for (var j = 0, len = usedColors.length; j < len; j++) {
+            var usedColor = usedColors[j].color;
+            var rDiff = (r - usedColor.r);
+            var gDiff = (g - usedColor.g);
+            var bDiff = (b - usedColor.b);
+            // 近似色が見つかった
+            if (rDiff * rDiff + gDiff * gDiff + bDiff * bDiff < NEAR_THRESHOLD) {
+                nearColorIndex = j;
+                break;
+            }
+        }
+        if (nearColorIndex >= 0) {
+            usedColors[nearColorIndex].count++;
+        } else{
             usedColors.push({
-                color: color,
+                color: { r: r, g: g, b: b },
                 count: 1
             });
         }
@@ -38,20 +49,4 @@ function findUsedColors(imageData, topN) {
     return usedColors.slice(0, TOP).map(function(obj) {
         return obj.color;
     });
-}
-function findNearColor(color, colors) {
-    for (var i = 0, n = colors.length; i < n; i++) {
-        var color2 = colors[i].color;
-        if (isNearColor(color, color2)) {
-            return i;
-        }
-    }
-    return -1;
-}
-function isNearColor(color1, color2) {
-    var THRESHOLD = 10;
-    var rDiff = color1.r - color2.r;
-    var gDiff = color1.g - color2.g;
-    var bDiff = color1.b - color2.b;
-    return (rDiff * rDiff + gDiff * gDiff + bDiff * bDiff) < THRESHOLD;
 }
