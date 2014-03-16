@@ -1,5 +1,38 @@
 {
-    "enable_contextmenu": {
-        "message": "右クリックを有効化"
+    "ConnectToHue": {
+        "message": "Connect to hue"
+    },
+    "InitializeHue": {
+        "message": "Initialize hue..."
+    },
+    "ReadyToPlay": {
+        "message": "Ready to play"
+    },
+    "ConnectingToMeethue": {
+        "message": "Connecting to meethue..."
+    },
+    "unableToReachHueBridge": {
+        "message": "unable to reach hue bridge."
+    },
+    "ConnectingToBridge": {
+        "message": "Connecting to bridge..."
+    },
+    "unknownErrorDetected": {
+        "message": "unknown error detected"
+    },
+    "PleasePressLinkButtonOnTheBridge": {
+        "message": "Please press link button on the bridge"
+    },
+    "Connected": {
+        "message": "Connected"
+    },
+    "PlayHue": {
+        "message": "Play hue"
+    },
+    "LightsOff": {
+        "message": "Lights off..."
+    },
+    "ReadyToPlay": {
+        "message": "Ready to play"
     }
 }

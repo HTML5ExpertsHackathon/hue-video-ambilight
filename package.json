@@ -1,0 +1,11 @@
+{
+  "name": "hue-video-ambilight",
+  "version": "0.0.0",
+  "author": "@kyo_ago, @Shumpei",
+  "license": "MIT",
+  "devDependencies": {
+    "grunt-contrib-compress": "^0.7.0",
+    "grunt-version": "^0.3.0",
+    "grunt": "^0.4.4"
+  }
+}

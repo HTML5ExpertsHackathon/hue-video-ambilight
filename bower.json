@@ -1,0 +1,18 @@
+{
+  "name": "hue-video-ambilight",
+  "version": "0.0.0",
+  "authors": [
+    "@kyo_ago",
+    "@Shumpei"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components"
+  ],
+  "dependencies": {
+    "jquery": "~2.1.0",
+    "async": "~0.2.10"
+  }
+}

@@ -1,29 +1,21 @@
 {
   "manifest_version": 2,
-
-  "name": "Hue Video Synchronizer",
-  "description": "",
-  "version": "1.0",
+  "name": "Hue Video Ambilight",
+  "version": "0.0.0",
   "icons": {
-    "48": "img/icon.png"
+    "48": "img/icon128.png"
   },
   "default_locale": "en",
   "content_scripts": [
     {
       "matches": ["*://*/*"],
       "js" : [
-        "lib/async.js",
-        "lib/jquery-2.1.0.min.js",
-        "content_scripts/setup.js",
-        "popup/util.js",
-        "content_scripts/index.js"
+        "bower_components/async/lib/async.js",
+        "bower_components/jquery/dist/jquery.min.js",
+        "src/content_scripts.js"
       ]
     }
   ],
-  "browser_action": {
-    "default_icon": "popup/icon.png",
-    "default_popup": "popup/popup.html"
-  },
   "permissions": [
     "storage"
   ]
