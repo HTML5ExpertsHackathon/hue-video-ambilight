@@ -234,17 +234,13 @@ $(function() {
 
                 ctx.drawImage(source, 0, 0, width, height);
                 var imageData = ctx.getImageData(0, 0, width, height);
-                util.findUsedColors(imageData, lightIds.length, function(error, colors) {
+                util.findUsedColors(imageData, function(error, color) {
                     if (error) {
                         return console.error(error);
                     }
-                    if (!colors.length) {
-                        return recursiveCall();
-                    }
-                    console.log(colors);
+                    console.log(color);
                     async.parallel(lightIds.map(function (lightId, idx) {
                         return function (done) {
-                            var color = colors[idx];
                             var hsb = util.rgbToHsv(color.r, color.g, color.b);
                             $.putJSON(baseURL + '/lights/' + lightId + '/state', {
                                 hue: Math.floor(65535 * hsb.h / 360),
@@ -288,15 +284,15 @@ $(function() {
 var color_analyzer = function(event) {
     var param = event.data;
     var callId = param.callId;
-    var usedColors = findUsedColors(param.imageData, param.topN);
+    var usedColor = findUsedColors(param.imageData);
     postMessage({
         callId: callId,
-        colors: usedColors
+        color: usedColor
     });
 };
-function findUsedColors(imageData, topN) {
+function findUsedColors(imageData) {
     var NEAR_THRESHOLD = 100;
-    var TOP = topN || 3, OPACITY_THRESHOLD = .1;
+    var OPACITY_THRESHOLD = .1;
     var usedColors = []; // [{color: {rgb}, count: n}]
     var imageDataArray = imageData.data;
     for (var i = 0, n = imageDataArray.length; i < n; i+=4) {
@@ -332,28 +328,37 @@ function findUsedColors(imageData, topN) {
     usedColors.sort(function(a, b) {
         return b.count - a.count;
     });
-    return usedColors.slice(0, TOP).map(function(obj) {
+    var topColors = usedColors.slice(0, 3).map(function(obj) {
         return obj.color;
     });
+    var color = topColors.reduce(function (base, target) {
+        return Object.keys(target).reduce(function (base, key) {
+            base[key] = (base[key] || 0) + target[key];
+            return base;
+        }, base);
+    }, {});
+    console.log(color)
+    // Object.keys(color).forEach(function (key) {
+    //     color[key] /= color.length;
+    // });
+    return color;
 }
 var util = (function() {
     var worker = new Worker(URL.createObjectURL(new Blob(['onmessage='+color_analyzer.toString() + ';' + findUsedColors.toString()], {type : "text\/javascript"})));
     
     var util = {};
-    util.findUsedColors = function(imageData, topN, callback) {
-        var TOP = topN || 3;
+    util.findUsedColors = function(imageData, callback) {
         var callId = Date.now();
         worker.onmessage = function(event) {
             var result = event.data;
             if (result.callId !== callId) {
                 return;
             }
-            callback(null, result.colors);
+            callback(null, result.color);
         };
         worker.postMessage({
             callId: callId,
-            imageData: imageData,
-            topN: topN
+            imageData: imageData
         }, [imageData.data.buffer]);
     }
     util.rgbToString = function(color) {
