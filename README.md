@@ -1,11 +1,11 @@
 Hue Video Ambilight
 =======
 
-Synchronize the Ambilight using hue of the html5 video elements.
+This chrome extension is synchronized to [Philips hue](http://meethue.com/) from html5 video elements.
 
 Install
 -------
-[Hue Video Ambilight](https://chrome.google.com/webstore/detail/enable-right-click/hhojmcideegachlhfgfdhailpfhgknjm)
+[Hue Video Ambilight](https://chrome.google.com/webstore/detail/ecnmcjjgjpmbnfchnlnlkpoooobogimf)
 
 License
 -------
