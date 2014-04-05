@@ -9,7 +9,7 @@ $(function() {
         'position' : 'absolute',
         'right' : 0,
         'top' : 0,
-        'z-index' : '2999999999'
+        'z-index' : '2999999999' // for YouTube
     });
 
     var HUE_DEVICE_TYPE = 'Hue Video Ambilight';
@@ -52,6 +52,9 @@ $(function() {
                 success: callback
             });
         };
+    });
+
+    window.addEventListener('popstate', function() {
     });
 
     async.waterfall([
