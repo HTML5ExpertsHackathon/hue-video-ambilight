@@ -1,9 +1,10 @@
+(function () {
+if (!document.querySelector('video')) {
+    return;
+}
+
 $(function() {
     'use strict';
-
-    if (!document.querySelector('video')) {
-        return;
-    }
 
     var messageContent = $('<div></div>').appendTo('body').css({
         'position' : 'absolute',
@@ -444,4 +445,6 @@ var util = (function() {
     };
 
     return util;
+})();
+
 })();

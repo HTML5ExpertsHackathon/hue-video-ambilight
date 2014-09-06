@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Hue Video Ambilight",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "icons": {
     "48": "img/icon128.png"
   },
@@ -18,5 +18,9 @@
   ],
   "permissions": [
     "storage"
+  ],
+  "web_accessible_resources": [
+      "/bower_components/jquery/dist/jquery.js",
+      "/bower_components/jquery/dist/jquery.min.map"
   ]
 }
